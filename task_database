@@ -1,0 +1,57 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import '../model/task.dart';
+
+class TaskDatabase {
+  static final TaskDatabase instance = TaskDatabase._init();
+  static Database? _database;
+
+  TaskDatabase._init();
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB('tasks.db');
+    return _database!;
+  }
+
+  Future<Database> _initDB(String fileName) async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, fileName);
+
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, _) async {
+        await db.execute('''
+          CREATE TABLE tasks(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            description TEXT,
+            completed INTEGER
+          )
+        ''');
+      },
+    );
+  }
+
+  Future<void> insertTask(Task task) async {
+    final db = await database;
+    await db.insert('tasks', {
+      'title': task.title,
+      'description': task.description,
+      'completed': task.completed ? 1 : 0,
+    });
+  }
+
+  Future<List<Task>> getTasks() async {
+    final db = await database;
+    final result = await db.query('tasks');
+
+    return result.map((e) => Task(
+      id: e['id'] as int,
+      title: e['title'] as String,
+      description: e['description'] as String,
+      completed: e['completed'] == 1,
+    )).toList();
+  }
+}
