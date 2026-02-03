@@ -1,0 +1,36 @@
+import 'package:flutter/material.dart';
+import '../model/task.dart';
+import '../repository/task_repository.dart';
+
+class TaskViewModel extends ChangeNotifier {
+  final _repo = TaskRepository();
+
+  List<Task> tasks = [];
+  bool isLoading = false;
+
+  Future<void> loadTasks() async {
+    isLoading = true;
+    notifyListeners();
+
+    tasks = await _repo.getTasks();
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> addTask(String title, String desc) async {
+    await _repo.addTask(
+      Task(title: title, description: desc),
+    );
+    await loadTasks();
+  }
+  Future<void> deleteTask(int id) async {
+    await _repo.deleteTask(id);
+    await loadTasks();
+  }
+  Future<void> toggleCompleted(Task task) async {
+    final updated = task.copyWith(completed: !task.completed);
+    await _repo.updateTask(updated);
+    await loadTasks();
+  }
+}
