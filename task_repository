@@ -1,0 +1,46 @@
+import '../service/task_api_service.dart';
+import '../database/task_database.dart';
+import '../model/task.dart';
+
+class TaskRepository {
+  final _api = TaskApiService();
+  final _db = TaskDatabase.instance;
+
+  Future<List<Task>> getTasks() async {
+    try {
+      final apiTasks = await _api.fetchTasks();
+
+      for (final t in apiTasks) {
+        await _db.insertTask(t);
+      }
+
+      return apiTasks;
+    } catch (_) {
+      return await _db.getTasks();
+    }
+  }
+
+  Future<void> addTask(Task task) async {
+    await _db.insertTask(task);
+  }
+
+  Future<void> deleteTask(int id) async {
+    final db = await TaskDatabase.instance.database;
+    await db.delete(
+      'tasks',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+  Future<void> updateTask(Task task) async {
+    final db = await TaskDatabase.instance.database;
+    await db.update(
+      'tasks',
+      task.toMap(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+    );
+  }
+
+
+}
