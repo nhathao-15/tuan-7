@@ -1,0 +1,23 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../model/task.dart';
+
+class TaskApiService {
+  Future<List<Task>> fetchTasks() async {
+    final response = await http.get(
+      Uri.parse('https://jsonplaceholder.typicode.com/todos?_limit=5'),
+    );
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+
+      return data.map((e) => Task(
+        title: e['title'],
+        description: 'From API',
+        completed: e['completed'] ?? false,
+      )).toList();
+    } else {
+      throw Exception('API error');
+    }
+  }
+}
