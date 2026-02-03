@@ -6,7 +6,6 @@ import 'view/main_screen.dart';
 import 'viewmodel/task_viewmodel.dart';
 
 void main() {
-  // BẮT BUỘC cho Windows / Desktop
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
